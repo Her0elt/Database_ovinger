@@ -17,7 +17,7 @@ SELECT * FROM FORLAG NATURAL JOIN BOK WHERE BOK.bok_id = FORLAG.forlag_id
 
 --a
 
-SELECT DISTINCT forlag_navn FROM FORLAG  projeksjon
+SELECT DISTINCT forlag_navn FROM FORLAG  --projeksjon
 
 --b
 
