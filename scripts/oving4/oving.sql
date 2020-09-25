@@ -15,18 +15,19 @@ LEFT JOIN ordredetalj on ordredetalj.ordrenr = ordrehode.ordrenr AND ordrehode.d
 --c
 
 
-SELECT navn, prisinfo.levnr, MIN(pris) as "pris" from levinfo 
-INNER JOIN  prisinfo ON levinfo.levnr = prisinfo.levnr AND prisinfo.delnr = 201 
-GROUP BY pris, navn, prisinfo.levnr;
+SELECT navn, prisinfo.levnr, (pris) as "pris" from levinfo 
+INNER JOIN  prisinfo ON (levinfo.levnr = prisinfo.levnr AND prisinfo.delnr = 201 )
+ORDER BY pris
+LIMIT 1;
 
 --d
 
 SELECT ordrehode.ordrenr , dato, beskrivelse, kvantum, pris, (kvantum*pris) as 'belop' from ordrehode 
-JOIN ordredetalj ON ordrehode.ordrenr = ordredetalj.ordrenr 
-JOIN prisinfo ON ordredetalj.delnr = prisinfo.delnr
-JOIN delinfo ON ordredetalj.delnr = delinfo.delnr
-AND ordrehode.ordrenr = 16
-LIMIT 1;
+JOIN ordredetalj ON ordrehode.ordrenr = ordredetalj.ordrenr AND ordrehode.ordrenr = 16
+JOIN prisinfo ON ordredetalj.delnr = prisinfo.delnr AND ordrehode.levnr = prisinfo.levnr
+JOIN delinfo ON ordredetalj.delnr = delinfo.delnr;
+
+
 
 --e
 
@@ -66,10 +67,9 @@ JOIN fylke_by ON levinfo_2.fylke_by_id = fylke_by.fylke_by_id;
 
 --g
 
-SELECT levby FROM levinfo
-LEFT JOIN prisinfo ON levinfo.levnr = prisinfo.levnr 
-GROUP BY levinfo.levby 
-HAVING prisinfo.delnr IS NULL;
+SELECT levby FROM levinfo WHERE levby NOT IN (SELECT DISTINCT(levby) FROM levinfo
+JOIN prisinfo ON (levinfo.levnr = prisinfo.levnr));
+
 
 --h
 
@@ -81,12 +81,19 @@ JOIN levinfo ON prisinfo.levnr = levinfo.levnr
 AND ordrenr = 18;
 
 SELECT levnr, min(b) as min_belop FROM (
-SELECT levnr , SUM(belop) as b , COUNT(levnr) as c
+SELECT levnr , SUM(belop) as b
 FROM ordre_18
 GROUP BY levnr
-HAVING c = 2;
-) GROUP BY levnr
+HAVING COUNT(levnr) = (SELECT COUNT(delnr) FROM ordredetalj WHERE ordrenr = 18)
+)min_pris
+GROUP BY levnr
 LIMIT 1;
+
+
+SELECT levnr, SUM(pris*kvantum)as SUM FROM prisinfo 
+JOIN ordredetalj ON prisinfo.delnr = ordredetalj.delnr AND ordredetalj.ordrenr = 18
+GROUP by levnr HAVING COUNT(levnr) = (SELECT COUNT(delnr) FROM ordredetalj WHERE ordrenr = 18)
+ORDER BY SUM(pris*kvantum) LIMIT 1;
 
 --oppgave 2
 
@@ -100,23 +107,13 @@ WHERE telefon NOT LIKE '2%';
 
 --b
 
-SELECT ROUND(AVG(avg_leve_tid),0) as avg_leve_tid FROM (
-SELECT AVG(YEAR(CURRENT_DATE)-fode_aar) as 'avg_leve_tid' FROM forfatter 
-WHERE fode_aar IS NOT NULL
-UNION ALL
-SELECT AVG(dod_aar-fode_aar) as 'avg_leve_tid' FROM forfatter 
-WHERE fode_aar IS NOT NULL AND dod_aar IS NOT NULL
-)avg_leve_tid;
+SELECT AVG(IF(dod_aar IS NULL, YEAR(CURRENT_DATE), dod_aar)-
+IF(dod_aar IS NULL AND fode_aar < 1900,NULL, fode_aar)) as avg_age FROM forfatter;
 
 --c
 
-SELECT (COUNT(avg_leve_tid) / (SELECT COUNT(*) FROM forfatter)) *100 as prosent FROM (
-SELECT COUNT(YEAR(CURRENT_DATE)-fode_aar) as 'avg_leve_tid' FROM forfatter 
-WHERE fode_aar IS NOT NULL
-UNION ALL
-SELECT COUNT(dod_aar-fode_aar) as 'avg_leve_tid' FROM forfatter 
-WHERE fode_aar IS NOT NULL AND dod_aar IS NOT NULL
-)avg_leve_tid;
+SELECT COUNT(IF(dod_aar IS NULL, YEAR(CURRENT_DATE), dod_aar)-
+IF(dod_aar IS NULL AND fode_aar < 1900,NULL, fode_aar))/COUNT(*) * 100 as avg_age FROM forfatter;
 
 
 
