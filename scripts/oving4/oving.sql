@@ -8,9 +8,9 @@ AND ordrehode.levnr = 44;
 
 --b
 
-SELECT navn, levby from levinfo 
-LEFT JOIN  ordrehode ON levinfo.levnr = ordrehode.levnr = levinfo.levnr 
-LEFT JOIN ordredetalj on ordredetalj.ordrenr = ordrehode.ordrenr AND ordrehode.delnr = 1;
+SELECT navn, levby FROM prisinfo 
+JOIN levinfo ON levinfo.levnr = prisinfo.levnr 
+AND prisinfo.delnr = 1;
 
 --c
 
@@ -26,8 +26,6 @@ SELECT ordrehode.ordrenr , dato, beskrivelse, kvantum, pris, (kvantum*pris) as '
 JOIN ordredetalj ON ordrehode.ordrenr = ordredetalj.ordrenr AND ordrehode.ordrenr = 16
 JOIN prisinfo ON ordredetalj.delnr = prisinfo.delnr AND ordrehode.levnr = prisinfo.levnr
 JOIN delinfo ON ordredetalj.delnr = delinfo.delnr;
-
-
 
 --e
 
@@ -67,7 +65,7 @@ JOIN fylke_by ON levinfo_2.fylke_by_id = fylke_by.fylke_by_id;
 
 --g
 
-SELECT levby FROM levinfo WHERE levby NOT IN (SELECT DISTINCT(levby) FROM levinfo
+SELECT DISTINCT(levby) FROM levinfo WHERE levby NOT IN (SELECT DISTINCT(levby) FROM levinfo
 JOIN prisinfo ON (levinfo.levnr = prisinfo.levnr));
 
 
@@ -107,7 +105,7 @@ WHERE telefon NOT LIKE '2%';
 
 --b
 
-SELECT AVG(IF(dod_aar IS NULL, YEAR(CURRENT_DATE), dod_aar)-
+SELECT AVG(IF(dod_aar IS NULL, YEAR(s), dod_aar)-
 IF(dod_aar IS NULL AND fode_aar < 1900,NULL, fode_aar)) as avg_age FROM forfatter;
 
 --c
