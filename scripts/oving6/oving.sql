@@ -1,7 +1,9 @@
 ---kandidat(kandidat_id, navn(fornavn,etternavn), telefon, epost, kvalifikasjoner*,oppdragsnr*)
 -- kvalifikasjoner(kvalifikkasjons_id, beskrivelse, kandidat*, oppdrag*)
 -- Bedrift(orgnr, navn, telefon, epost, oppdrag*)
--- oppdrag(oppdragsnr, bedrifts_navn*, start, slutt, timer, sluttrapport*, kandidat*)
+--kvalifikasjon_kandidat(kvalifikasjon_kandidat_id, kvalifikasjon_id*, kandidat_id*)
+--jobbhistorikk(jobbhistorikk_id, kandidat_id*)
+-- oppdrag(oppdragsnr, bedrifts_navn*, start, slutt, timer, sluttrapport*, jobbhistorikk_id*)
 -- sluttraport(sluttraport_id, info, oppdrag*)
 
 
@@ -39,7 +41,6 @@ CREATE TABLE bedrift(
 
 CREATE TABLE jobbhistorikk(
     jobbhistorikk_id INT NOT NULL
-    oppdragsnr INT NOT NULL,
     kandidat_id INT NOT NULL,
     CONSTRAINT jobbhistorikk_pk PRIMARY KEY (jobbhistorikk_id)
     CONSTRAINT  oppdrag_fk FOREIGN KEY(oppdragsnr) REFERENCES oppdrag(oppdragsnr)
@@ -52,9 +53,11 @@ CREATE TABLE oppdrag(
     kvalifikasjoner_id INT NOT NULL,
     start DATE NOT NULL,
     slutt DATE NOT NULL,
+    jobbhistorikk_id NULL,
     CONSTRAINT oppdrag_pk PRIMARY KEY(oppdragsnr)
     CONSTRAINT kvalifikasjons_fk FOREIGN KEY(kvalifikasjons_id) REFERENCES kvalifikasjon(kvalifikasjons_id)
     CONSTRAINT bedrifts_navn_pk FOREIGN KEY(bedrifts_navn) REFERENCES bedrift(navn)
+    CONSTRAINT jobbhistorikk_pk FOREIGN KEY(jobbhistorikk_id) REFERENCES jobbhistorikk(jobbhistorikk_id)
 );
 
 CREATE TABLE sluttraport(
@@ -80,5 +83,5 @@ LEFT JOIN kvalifikasjon ON kvalifikasjon_kandidat.kvalifikasjon_id = kvalifikasj
 
 SELECT kandidat_id CONCAT(fornavn, " ", etternavn) as navn, sluttdato, oppdragsnr, bedrifts_navn FROM kandidat
 JOIN jobbhistorikk ON kandidat.kandidat_id = jobbhistorikk.kandidat_id
-JOIN oppdrag ON jobbhistorikk.oppdragsnr = oppdrag.oppdragsnr;
+JOIN oppdrag ON jobbhistorikk.jobbhistorikk_id = oppdrag.jobbhistorikk_id AND kandidat_id = ?;
 

@@ -34,19 +34,22 @@ class Oppgave5b{
         try{
             Connection c = connect();
             PreparedStatement stmt;
-            stmt = c.prepareStatement("select forfatter, tittel, count(*) as antall "+
-                    "from boktittel join eksemplar on boktittel.isbn = eksemplar.isbn where eksemplar.isbn = ?");
+            PreparedStatement stmt2;
+            stmt = c.prepareStatement("select forfatter, tittel from boktittel where isbn = ?");
+            stmt2 = c.prepareStatement("SELECT COUNT(*) as antall FROM eksemplar WHERE isbn = ?");
             stmt.setString(1, isbn);
-            printInfo(stmt.executeQuery());
+            stmt2.setString(1, isbn);
+            printInfo(stmt.executeQuery(), stmt2.executeQuery());
+            c .close();
         }catch(SQLException e){
             e.printStackTrace();
         }
     }
-    private static void printInfo(ResultSet s) throws SQLException {
-        while(s.next()) {
+    private static void printInfo(ResultSet s,ResultSet t) throws SQLException {
+        while(s.next() && t.next()) {
             System.out.println("forfatter: " + s.getString("forfatter") + "\n" +
                     "tittel: " + s.getString("tittel") + "\n" +
-                    "antall: " + s.getInt("antall"));
+                    "antall: " + t.getInt("antall"));
         }
     }
 
@@ -67,8 +70,8 @@ class Oppgave5b{
     }
 
     public static void main(String[] args) {
-        getInfoByIsbn("0-07-241163-5");
-        System.out.println("rows affected: "+updateInfoByIsbn("0-07-241163-5","Per Olsen", 1));
+        getInfoByIsbn("0-596-00");
+        System.out.println("rows affected: "+updateInfoByIsbn("0-596-00123-1","Per Olsen", 1));
     }
 
 
